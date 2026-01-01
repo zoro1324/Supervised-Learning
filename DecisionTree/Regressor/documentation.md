@@ -1,105 +1,170 @@
-# DecisionTreeRegressor
+# Decision Tree Regressor
 
-A **Decision Tree Regressor** is a supervised machine learning model used to predict **continuous values**.  
-It works by splitting the data into branches based on feature thresholds, forming a tree-like structure of decisions. Each leaf node predicts the **average value** of the target for that branch.
-
----
-
-## Type
-- Supervised Learning  
-- Regression  
+> A supervised machine learning algorithm for predicting continuous numerical values using a tree-based decision structure.
 
 ---
 
-## When to Use
-- When the relationship between features and target is **non-linear**  
-- When **feature interactions** are important  
-- When you want a model that is **easy to interpret**  
+## 📋 Table of Contents
+
+1. [Overview](#overview)
+2. [Use Cases](#use-cases)
+3. [Input & Output](#input--output)
+4. [Data Preprocessing](#data-preprocessing)
+5. [Algorithm Workflow](#algorithm-workflow)
+6. [Hyperparameters](#hyperparameters)
+7. [Regularization Techniques](#regularization-techniques)
+8. [Evaluation Metrics](#evaluation-metrics)
+9. [Pros & Cons](#pros--cons)
+10. [Implementation Example](#implementation-example)
 
 ---
 
-## Input / Output
-- **Input (X):** Numerical features (all categorical features must be encoded first)  
-- **Output (y):** Continuous value  
+## Overview
+
+| Attribute | Description |
+|-----------|-------------|
+| **Type** | Supervised Learning |
+| **Task** | Regression |
+| **Library** | `sklearn.tree.DecisionTreeRegressor` |
+
+A **Decision Tree Regressor** predicts continuous target values by recursively partitioning the feature space based on optimal thresholds. The algorithm constructs a hierarchical tree structure where each internal node represents a decision rule, and each leaf node outputs the **mean value** of training samples within that partition.
 
 ---
 
-## Preprocessing
-- **Feature Scaling:** ❌ Not required  
-- **Missing Values:** ❌ Must be handled (drop or impute)  
-- **Categorical Data:** ⚠️ Encode using OneHotEncoder or LabelEncoder  
-- **Outliers:** ✅ Decision Trees are mostly robust, but extreme outliers can affect splits  
+## Use Cases
+
+| Scenario | Suitability |
+|----------|-------------|
+| Non-linear feature-target relationships | ✅ Excellent |
+| Complex feature interactions | ✅ Excellent |
+| Model interpretability required | ✅ Excellent |
+| Small to medium datasets | ✅ Good |
+| Large-scale datasets | ⚠️ Consider ensemble methods |
 
 ---
 
-## How It Works
-1. Starts with all data at the root  
-2. Tries all possible splits on all features  
-3. Chooses the split that **reduces variance** the most (MSE by default)  
-4. Recursively splits the data until a stopping condition is reached (max depth, min samples)  
-5. Each leaf predicts the **mean target value** of the data points it contains  
+## Input & Output
+
+| Component | Description |
+|-----------|-------------|
+| **Input (X)** | Numerical feature matrix *(categorical features must be encoded)* |
+| **Output (y)** | Continuous numerical values |
 
 ---
 
-## Important Parameters
-| Parameter | Purpose |
-|---------|---------|
-| `max_depth` | Maximum depth of the tree (controls overfitting) |
-| `min_samples_split` | Minimum number of samples required to split a node |
-| `min_samples_leaf` | Minimum number of samples required at a leaf node |
-| `max_features` | Number of features to consider at each split |
-| `criterion` | Function to measure split quality (`squared_error` for regression) |
+## Data Preprocessing
+
+| Preprocessing Step | Required | Notes |
+|--------------------|----------|-------|
+| Feature Scaling | ❌ No | Tree-based models are scale-invariant |
+| Missing Value Handling | ✅ Yes | Impute or remove missing values |
+| Categorical Encoding | ✅ Yes | Use `OneHotEncoder` or `LabelEncoder` |
+| Outlier Treatment | ⚠️ Optional | Trees are generally robust, but extreme values may affect splits |
 
 ---
 
-## Overfitting Control
-- Limit `max_depth`  
-- Increase `min_samples_leaf`  
-- Increase `min_samples_split`  
+## Algorithm Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. Initialize with complete dataset at root node           │
+│                           ↓                                 │
+│  2. Evaluate all possible feature splits                    │
+│                           ↓                                 │
+│  3. Select split that minimizes variance (MSE criterion)    │
+│                           ↓                                 │
+│  4. Recursively partition until stopping criteria met       │
+│                           ↓                                 │
+│  5. Assign mean target value to each leaf node              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Hyperparameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `max_depth` | int | None | Maximum tree depth *(primary regularization)* |
+| `min_samples_split` | int | 2 | Minimum samples required to split an internal node |
+| `min_samples_leaf` | int | 1 | Minimum samples required at a leaf node |
+| `max_features` | int/float | None | Number of features to consider per split |
+| `criterion` | str | `squared_error` | Split quality measure (`squared_error`, `friedman_mse`, `absolute_error`) |
+
+---
+
+## Regularization Techniques
+
+To prevent overfitting, apply the following constraints:
+
+| Technique | Implementation |
+|-----------|----------------|
+| Limit tree depth | Set `max_depth` to a reasonable value (e.g., 5–10) |
+| Increase leaf samples | Set `min_samples_leaf` ≥ 5 |
+| Increase split samples | Set `min_samples_split` ≥ 10 |
+| Pruning | Use `ccp_alpha` for cost-complexity pruning |
 
 ---
 
 ## Evaluation Metrics
-- **Mean Absolute Error (MAE)** – average magnitude of errors  
-- **Mean Squared Error (MSE) / Root MSE** – penalizes larger errors  
-- **R² Score** – percentage of variance explained  
+
+| Metric | Formula | Interpretation |
+|--------|---------|----------------|
+| **MAE** | $\frac{1}{n}\sum\|y_i - \hat{y}_i\|$ | Average absolute prediction error |
+| **MSE** | $\frac{1}{n}\sum(y_i - \hat{y}_i)^2$ | Average squared error *(penalizes large errors)* |
+| **RMSE** | $\sqrt{MSE}$ | Root mean squared error *(same units as target)* |
+| **R² Score** | $1 - \frac{SS_{res}}{SS_{tot}}$ | Proportion of variance explained *(0 to 1)* |
 
 ---
 
-## Advantages
-- Works well for non-linear relationships  
-- No need for feature scaling  
-- Easy to interpret and visualize  
+## Pros & Cons
+
+| ✅ Advantages | ❌ Disadvantages |
+|---------------|------------------|
+| Captures non-linear relationships | Prone to overfitting without regularization |
+| No feature scaling required | High variance *(sensitive to data changes)* |
+| Highly interpretable & visualizable | Poor extrapolation beyond training range |
+| Handles feature interactions naturally | Single trees may underperform on complex data |
 
 ---
 
-## Disadvantages
-- Can **overfit** easily if not controlled  
-- Sensitive to small variations in data  
-- Poor extrapolation outside training range  
-- Not ideal for very large datasets  
-
----
-
-## Basic Example
+## Implementation Example
 
 ```python
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
-# Split data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-# Initialize model
-model = DecisionTreeRegressor(max_depth=5, min_samples_leaf=5, random_state=42)
+# Model initialization with regularization
+model = DecisionTreeRegressor(
+    max_depth=5,
+    min_samples_leaf=5,
+    min_samples_split=10,
+    random_state=42
+)
 
-# Train
+# Training
 model.fit(X_train, y_train)
 
-# Predict
+# Prediction
 y_pred = model.predict(X_test)
 
-# Evaluate
-print("MSE:", mean_squared_error(y_test, y_pred))
-print("R2 Score:", r2_score(y_test, y_pred))
+# Evaluation
+print(f"MAE:  {mean_absolute_error(y_test, y_pred):.4f}")
+print(f"MSE:  {mean_squared_error(y_test, y_pred):.4f}")
+print(f"RMSE: {mean_squared_error(y_test, y_pred, squared=False):.4f}")
+print(f"R²:   {r2_score(y_test, y_pred):.4f}")
+```
+
+---
+
+<div align="center">
+
+**📚 Related:** [Decision Tree Classifier](../Classifier/) | [Random Forest Regressor](#) | [Gradient Boosting](#)
+
+</div>
